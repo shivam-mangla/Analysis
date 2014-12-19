@@ -1,4 +1,4 @@
-package in.mdgiitr.analysis;
+package com.sds.judge;
 
 import android.content.Intent;
 import android.os.Bundle;
