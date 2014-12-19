@@ -9,20 +9,31 @@
         android:targetSdkVersion="19" />
 
     <uses-permission android:name="com.android.browser.permission.READ_HISTORY_BOOKMARKS" />
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
+        <meta-data android:name="com.facebook.sdk.ApplicationId"
+                   android:value="@string/facebook_app_id"/>
         <activity
-            android:name="in.mdgiitr.analysis.MainActivity"
-            android:label="@string/app_name" >
+                android:name="in.mdgiitr.analysis.HelloFacebookSampleActivity"
+                android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+        <activity
+                android:name="com.facebook.LoginActivity"
+                android:label="@string/app_name" >
+        </activity>
+        <activity
+                android:name=".MainActivity"
+                android:label="@string/app_name" >
         </activity>
     </application>
 
