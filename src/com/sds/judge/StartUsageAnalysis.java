@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -22,7 +23,14 @@ public class StartUsageAnalysis {
 
 	public void execute() {
 		// TODO Auto-generated method stub
-		Globals.allApplications = new ArrayList<AppDetails>();
+		//Globals.allApplications = new ArrayList<AppDetails>();
+		if (BackgroundService.db == null) {
+			BackgroundService.db = new UsageDB(mContext);
+			BackgroundService.db.open();
+			Log.e("db open","check");
+		} else {
+			return;
+		}
 		packagemanager = mContext.getPackageManager();
 		packageList = packagemanager
 				.getInstalledPackages(PackageManager.GET_PERMISSIONS);
@@ -35,8 +43,12 @@ public class StartUsageAnalysis {
 					AppDetails appDetails = new AppDetails();
 					appDetails.packageName = pi.packageName;
 					appDetails.milliseconds = 0;
-
-					Globals.allApplications.add(appDetails);
+					if(!BackgroundService.db.containApp(appDetails))
+					{
+						BackgroundService.db.addApp(appDetails);
+						
+					}
+				//	Globals.allApplications.add(appDetails);
 
 				} catch (Exception e) {
 				}

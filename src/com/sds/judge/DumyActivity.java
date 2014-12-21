@@ -13,8 +13,8 @@ public class DumyActivity extends Activity{
 		super.onCreate(savedInstanceState);
 		Log.e("dumy activity starts","true");
 		setContentView(R.layout.application_packages);
-		Intent i= new Intent(this, BackgroundService.class);
-		this.startService(i); 
+		Intent i= new Intent(DumyActivity.this, BackgroundService.class);
+		DumyActivity.this.startService(i); 
 
 		}
 
