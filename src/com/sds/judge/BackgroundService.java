@@ -7,20 +7,28 @@ import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.util.Log;
 
+/*run this service always and check currently running app every LOOP_SECONDS.*/
 public class BackgroundService extends Service {
 
-	protected static final int LOOP_SECONDS = 3;
-	private static final int NUMBER_RUNNING_TASK = 1;
-	String launcherPackage = null;
+	protected static final int LOOP_SECONDS = 3;// calculate running apps after
+												// every LOOP_SECONDS interval
+	private static final int NUMBER_RUNNING_TASK = 1;// get this number of
+														// running apps at a
+														// time
+	String launcherPackage = null;// Launcher is the name given to the part of
+									// the Android user interface that lets
+									// users customize the home screen (e.g. the
+									// phone's desktop)
 	Handler handler = new Handler();
-	private PowerManager powerManager;
-	public static UsageDB db=null;
+	private PowerManager powerManager;// check screen on/off
+	public static UsageDB db = null;
 
 	@Override
 	public IBinder onBind(Intent intent) {
@@ -34,12 +42,10 @@ public class BackgroundService extends Service {
 		super.onCreate();
 		if (db == null) {
 			db = new UsageDB(this);
-			Log.e("new usage db","db");
 			db.open();
 		} else {
 			return;
 		}
-		Log.e("service", "oncreate");
 	}
 
 	@Override
@@ -53,13 +59,14 @@ public class BackgroundService extends Service {
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		// TODO Auto-generated method stub
+
+		// get all installed packages
 		StartUsageAnalysis startUsageAnalysis = new StartUsageAnalysis(
 				getApplicationContext());
 		startUsageAnalysis.execute();
 
-		Log.e("service", "onstartcommand");
-		// receiver
 		launcherPackage = getLauncherPackage();
+		Log.e("launcher", "" + launcherPackage);
 		handler.removeCallbacks(runnable);
 		handler.post(runnable);
 
@@ -68,10 +75,11 @@ public class BackgroundService extends Service {
 
 	private String getLauncherPackage() {
 		// TODO Auto-generated method stub
+
 		final Intent intent = new Intent(Intent.ACTION_MAIN);
 		intent.addCategory(Intent.CATEGORY_HOME);
 		final ResolveInfo res = getApplicationContext().getPackageManager()
-				.resolveActivity(intent, 0);
+				.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY);
 		if (res.activityInfo == null) {
 			// should not happen. A home is always installed, isn't it?
 		}
@@ -94,8 +102,6 @@ public class BackgroundService extends Service {
 	private void updateTime() {
 		// TODO Auto-generated method stub
 
-		// turn to runnable
-		Log.e("update time", "enter runnable");
 		Runnable runnable = new Runnable() {
 			public void run() {
 
@@ -104,52 +110,41 @@ public class BackgroundService extends Service {
 					powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
 					final ActivityManager activityManager = (ActivityManager) getApplicationContext()
 							.getSystemService(Context.ACTIVITY_SERVICE);
-					final List<ActivityManager.RunningTaskInfo> runningTasks = activityManager
+					final List<ActivityManager.RunningTaskInfo> runningApps = activityManager
 							.getRunningTasks(NUMBER_RUNNING_TASK);
-					String runningTaskPackage = "";
-					Log.e("activity manager", "" + activityManager);
-					if (runningTasks == null)
-						Log.e("recent tasks ", "null");
 
-					if (runningTasks != null && runningTasks.size() > 0) {
+					String runningAppPackage = "";
 
-						ComponentName componentName = runningTasks.get(0).baseActivity;
-						runningTaskPackage = componentName.getPackageName();
-						Log.e("runningTask package", "" + runningTaskPackage);
+					if (runningApps != null && runningApps.size() > 0) {
+
+						ComponentName componentName = runningApps.get(0).baseActivity;
+						runningAppPackage = componentName.getPackageName();
+						Log.e("runningTask package", "" + runningAppPackage);
 					}
-
-					if (launcherPackage == null)
-						Log.e("launcher", "null");
-
-					if (runningTaskPackage != null && launcherPackage != null
-							&& !launcherPackage.equals(runningTaskPackage)) {
-						Log.e(" first if ", "cleared");
+					// add time when there is running app except the launcher
+					// and screen is on.
+					if (runningAppPackage != null && launcherPackage != null
+							&& !launcherPackage.equals(runningAppPackage)) {
 						if (powerManager.isScreenOn()) {
 
 							Log.e("finally update", "time");
-							if (db.containApp(runningTaskPackage)) {
-								Log.e("if","if if if");
-								db.addSeconds(runningTaskPackage, LOOP_SECONDS);
+							if (db.containApp(runningAppPackage)) {
+								db.addSeconds(runningAppPackage, LOOP_SECONDS);
 							} else {
-								Log.e("else","else else else");
 								AppDetails appDetails = new AppDetails();
-								appDetails.packageName = runningTaskPackage;
-								appDetails.milliseconds = LOOP_SECONDS;
+								appDetails.packageName = runningAppPackage;
+								appDetails.seconds = LOOP_SECONDS;
 								db.addApp(appDetails);
 								Log.e("package name: " + appDetails.packageName,
-										"time: " + appDetails.milliseconds);
-
+										"time: " + appDetails.seconds);
 							}
-
 						}
 					}
 
 				} catch (Exception e) {
-					Log.e("in catch", "true-" + e.getMessage());
+					Log.e("in catch", "-" + e.getMessage());
 					e.printStackTrace();
-
 				}
-
 			}
 		};
 		new Thread(runnable).start();

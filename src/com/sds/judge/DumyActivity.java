@@ -5,18 +5,18 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 
-public class DumyActivity extends Activity{
+//activity to start service for time usage calculation of various apps.
+public class DumyActivity extends Activity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
-		Log.e("dumy activity starts","true");
 		setContentView(R.layout.application_packages);
-		Intent i= new Intent(DumyActivity.this, BackgroundService.class);
-		DumyActivity.this.startService(i); 
 
-		}
+		// start service for time usage calculation
+		Intent i = new Intent(DumyActivity.this, BackgroundService.class);
+		DumyActivity.this.startService(i);
 
-	
+	}
 }

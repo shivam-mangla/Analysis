@@ -1,6 +1,6 @@
 package com.sds.judge;
 
 public class AppDetails {
-	public static  String  packageName="";
-	public static  long  milliseconds=0 ;
+	public static String packageName = "";
+	public static long seconds = 0;
 }
